@@ -38,7 +38,7 @@ const ConversationPage = () => {
                 messages: newMessages,
             });
 
-            setMessages((current) => [...current, userMessage, response.data]);
+            setMessages((current) => [...current, userMessage,{role:"assistant",content:response.data}]);
 
             form.reset();
         } catch (error: any) {
