@@ -4,7 +4,7 @@ import axios from 'axios';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Heading from "@/components/heading";
-import { CodeIcon, MessageSquare } from "lucide-react";
+import { MessageSquare, Music, MusicIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { formSchema } from './constants';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
@@ -15,15 +15,11 @@ import { useState } from 'react';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { Empty } from '@/components/empty';
 import { Loader } from '@/components/loader';
-import { cn } from '@/lib/utils';
-import { UserAvatar } from '@/components/user-avatar';
-import { BotAvatar } from '@/components/bot-avatar';
-import ReactMarkdown from'react-markdown';
 
 
-const ConversationPage = () => {
+const MusicPage = () => {
     const router = useRouter();
-    const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([]);
+    const [music, setMusic] = useState<string>();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -35,18 +31,12 @@ const ConversationPage = () => {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            const userMessage: ChatCompletionMessageParam = {
-                role: "user",
-                content: values.prompt,
-            };
-            const newMessages = [...messages, userMessage];
+         setMusic(undefined);
 
-            const response = await axios.post('/api/conversation', {
-                messages: newMessages,
-            });
+            const response = await axios.post('/api/music',values)
 
-            setMessages((current) => [...current, userMessage,{role:"assistant",content:response.data}]);
-
+            setMusic(response.data.audio);
+          
             form.reset();
         } catch (error: any) {
             // TODO: open pro model
@@ -71,11 +61,11 @@ const ConversationPage = () => {
     return (
         <div>
             <Heading
-                title='Code'
-                description="Our most advanced Code Model."
-                icon={CodeIcon}
-                iconColor="text-green-700"
-                bgColor="bg-green-700/10"
+                title='Music'
+                description="Our most Music Generating Model."
+                icon={MusicIcon}
+                iconColor="text-emerald-700"
+                bgColor="bg-emerald-700/10"
             />
             <div className="px-4 lg:px-8">
                 <div>
@@ -102,7 +92,7 @@ const ConversationPage = () => {
                                                 className='border-0 outline-none 
                                                 focus-visible:ring-0 focus-visible:ring-transparent'
                                                 disabled={isLoading}
-                                                placeholder='Ask code'
+                                                placeholder='Generates Music'
                                                 {...field} />
                                         </FormControl>
                                     </FormItem>
@@ -121,39 +111,18 @@ const ConversationPage = () => {
                             <Loader />
                         </div>
                     )}
-                {messages.length==0 && !isLoading &&(
-                    <Empty label='No conversation started' />
+                {!music && !isLoading &&(
+                    <Empty label='No music generated ' />
                 )}
-                    <div className='flex flex-col-reverse gap-y-4'>
-                        {messages.map((message, index) => (
-                            <div key={index}
-                            className={cn('p-8 w-full flex items-start gap-x-8 rounded-lg',
-                                message.role=='user'?"bg-white border border-black/10":"bg-muted"
-                            )}>
-                                {message.role=='user'?<UserAvatar />:<BotAvatar />}
-                               <ReactMarkdown 
-                               components={{
-                                pre:({node,...props})=>(
-                                    <div className='overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg'>
-                                        <pre {...props}/>
-                                    </div>
-                                ),
-                                code:({node,...props})=>(
-                                    <code className='bg-black/10 rounded-lg p-1' {...props} />
-                                )
-                               }
-                               } className='text-sm overflow-hidden leading-7'>
-                                    
-                                {renderMessageContent(message.content)||''}
-                                {/* // expected error no problem in code */}
-                                </ReactMarkdown>
-                            </div>
-                        ))}
-                    </div>
+                    {music&&(
+                        <audio controls className='w-full mt-8'>
+                            <source src={music} />
+                        </audio>
+                    )}
                 </div>
             </div>
         </div>
     )
 }
 
-export default ConversationPage;
+export default MusicPage;
