@@ -28,10 +28,16 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { messages } = body;
+    const { prompt,amount=1,resolution='512x512' } = body;
 
-    if (!messages) {
-      return NextResponse.json({ error: 'No messages provided' }, { status: 400 });
+    if (!prompt) {
+      return NextResponse.json({ error: 'No prompt provided' }, { status: 400 });
+    }
+    if (!amount) {
+      return NextResponse.json({ error: 'No amount provided' }, { status: 400 });
+    }
+    if (!resolution) {
+      return NextResponse.json({ error: 'No resolution provided' }, { status: 400 });
     }
 
     // const response = await openai.chat.completions.create({
@@ -39,12 +45,18 @@ export async function POST(req: Request) {
     //   messages
     // });
 
-    const response = await together.chat.completions.create({
-      model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
-      messages,
+    const response = await together.images.create({
+      model: 'stabilityai/stable-diffusion-xl-base-1.0',
+      prompt,
+      n:parseInt(amount,10),
+      width:512,
+      height:512,
+      steps: 40,
+      seed: 9195
+
     });
 
-    return NextResponse.json(response.choices[0].message?.content);
+    return NextResponse.json(response.data[0].b64_json);
   } catch (error: any) {
     console.log("[CONVERSATION ERROR]", error);
 
