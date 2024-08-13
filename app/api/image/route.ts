@@ -1,11 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
 import Together from 'together-ai';
-
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
-// });
 
 const together = new Together({
   apiKey: process.env['TOGETHER_API_KEY'],
@@ -19,47 +14,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // if (!openai.apiKey) {
-    //   return NextResponse.json({ error: 'OpenAI key not found' }, { status: 500 });
-    // }
-
     if (!process.env['TOGETHER_API_KEY']) {
-      return NextResponse.json({ error: 'OpenAI key not found' }, { status: 500 });
+      return NextResponse.json({ error: 'TOGETHER_API_KEY not found' }, { status: 500 });
     }
 
     const body = await req.json();
-    const { prompt,amount=1,resolution='512x512' } = body;
+    const { prompt, amount = 1, resolution = '512x512' } = body;
 
     if (!prompt) {
       return NextResponse.json({ error: 'No prompt provided' }, { status: 400 });
     }
-    if (!amount) {
-      return NextResponse.json({ error: 'No amount provided' }, { status: 400 });
-    }
-    if (!resolution) {
-      return NextResponse.json({ error: 'No resolution provided' }, { status: 400 });
+
+    if (!amount || isNaN(parseInt(amount, 10))) {
+      return NextResponse.json({ error: 'Invalid amount provided' }, { status: 400 });
     }
 
-    // const response = await openai.chat.completions.create({
-    //   model: "gpt-3.5-turbo",
-    //   messages
-    // });
+    const [width, height] = resolution.split('x').map(Number);
+    if (!width || !height) {
+      return NextResponse.json({ error: 'Invalid resolution provided' }, { status: 400 });
+    }
 
     const response = await together.images.create({
       model: 'stabilityai/stable-diffusion-xl-base-1.0',
       prompt,
-      n:parseInt(amount,10),
-      width:512,
-      height:512,
+      n: parseInt(amount, 10),
+      width,
+      height,
       steps: 40,
-      seed: 9195
-
+      seed: 9195,
     });
 
-    return NextResponse.json(response.data[0].b64_json);
+    return NextResponse.json({ images: response.data.map(img => img.b64_json) });
   } catch (error: any) {
-    console.log("[CONVERSATION ERROR]", error);
-
-    return NextResponse.json({ error }, { status: 500 });
-  }
+    console.error("[CONVERSATION ERROR]", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+  }
 }
