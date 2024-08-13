@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { prompt, amount = 1, resolution = '512x512' } = body;
+    const { prompt, amount, resolution = '512x512' } = body;
 
     if (!prompt) {
       return NextResponse.json({ error: 'No prompt provided' }, { status: 400 });
