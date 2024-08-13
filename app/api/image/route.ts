@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       seed: 9195,
     });
 
-    return NextResponse.json({ images: response.data.map(img => img.b64_json) });
+    return NextResponse.json("data:image/png;base64,"+response.data[0].b64_json);
   } catch (error: any) {
     console.error("[CONVERSATION ERROR]", error);
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
