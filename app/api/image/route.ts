@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     const response = await together.images.create({
       model: 'stabilityai/stable-diffusion-xl-base-1.0',
       prompt,
-      n: parseInt(amount, 10),
+      n:parseInt(amount),
       width,
       height,
       steps: 40,
