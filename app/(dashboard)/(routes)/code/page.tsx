@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/components/user-avatar';
 import { BotAvatar } from '@/components/bot-avatar';
 import ReactMarkdown from'react-markdown';
+import React from 'react';
 
 
 const ConversationPage = () => {
@@ -147,7 +148,7 @@ const ConversationPage = () => {
                                }
                                } className='text-sm overflow-hidden leading-7'>
                                     
-                                {renderMessageContent(message.content)||''}
+                                {React.Children.toArray(renderMessageContent(message.content)).join('') || ''}
                                 {/* // expected error no problem in code */}
                                 </ReactMarkdown>
                             </div>
