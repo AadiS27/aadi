@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import Together from 'together-ai';
+import{incrementApiCount,checkApiLimit} from'@/lib/api-limit';
 
 // const openai = new OpenAI({
 //   apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
@@ -34,6 +35,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No messages provided' }, { status: 400 });
     }
 
+    const isWithinLimit = await checkApiLimit();
+
+    if (!isWithinLimit) {
+      return new NextResponse('Free trial ended' , { status: 403 });
+    }
+
     // const response = await openai.chat.completions.create({
     //   model: "gpt-3.5-turbo",
     //   messages
@@ -43,6 +50,8 @@ export async function POST(req: Request) {
       model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
       messages,
     });
+
+    await incrementApiCount();
 
     return NextResponse.json(response.choices[0].message?.content);
   } catch (error: any) {
