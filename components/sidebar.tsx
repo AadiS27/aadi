@@ -35,12 +35,7 @@ const routes=[
         href:'/code',
         color:'text-green-700',
     },
-    {
-        label:'Settings',
-        icon:Settings,
-        href:'/settings',
-        color:'text-white',
-    },
+
 ];
 
 interface SidebarProps{

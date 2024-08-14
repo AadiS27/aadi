@@ -1,5 +1,6 @@
 'use client'
 
+import { useProModal } from '@/hooks/use-pro-modal';
 import axios from 'axios';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -24,6 +25,7 @@ import Image from 'next/image';
 
 
 const ImagePage = () => {
+    const ProModal=useProModal();
     const[images,setImages]=useState<string[]>([]);
     const router = useRouter();
     const form = useForm<z.infer<typeof formSchema>>({
@@ -46,8 +48,9 @@ const ImagePage = () => {
             setImages(urls);
             form.reset();
         } catch (error: any) {
-            // TODO: open pro model
-            console.log(error);
+            if(error?.response?.status==403){
+                ProModal.onOpen();
+           }
         } finally {
             router.refresh();
         }

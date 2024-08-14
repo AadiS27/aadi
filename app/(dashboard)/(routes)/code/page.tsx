@@ -1,5 +1,6 @@
 'use client'
 
+import { useProModal } from '@/hooks/use-pro-modal';
 import axios from 'axios';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -22,6 +23,7 @@ import ReactMarkdown from'react-markdown';
 
 
 const ConversationPage = () => {
+    const ProModal=useProModal();
     const router = useRouter();
     const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([]);
     const form = useForm<z.infer<typeof formSchema>>({
@@ -49,8 +51,9 @@ const ConversationPage = () => {
 
             form.reset();
         } catch (error: any) {
-            // TODO: open pro model
-            console.log(error);
+            if(error?.response?.status==403){
+                ProModal.onOpen();
+           }
         } finally {
             router.refresh();
         }
